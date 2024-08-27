@@ -4,7 +4,7 @@ import threading
 from config import TELEGRAM_TOKEN
 from logger import logger
 from usp import list_device, handle_wifi
-from acs import acs
+from acs import acs, cek_perangkat
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
@@ -21,6 +21,7 @@ def send_welcome(message):
     markup.add("Ubah Nama Wifi")
     markup.add("Ubah Password")
     markup.add("Ubah Nama WiFi dan Password")
+    markup.add("Cek Status Perangkat")
     bot.reply_to(message, "Selamat datang di Bot ACS. Silakan pilih menu:", reply_markup=markup)
     
 # fuction lankah selanjutnya
@@ -36,7 +37,7 @@ def fun_step(message, step_key, next_step, prompt):
     else:
         bot.reply_to(message, "Input tidak valid.")
 # mulai
-@bot.message_handler(func=lambda message: message.text in ["Ubah Nama Wifi", "Ubah Password", "Ubah Nama WiFi dan Password"])
+@bot.message_handler(func=lambda message: message.text in ["Ubah Nama Wifi", "Ubah Password", "Ubah Nama WiFi dan Password", "Cek Status Perangkat"])
 def start_process(message):
     chat_id = message.chat.id
 
@@ -49,17 +50,29 @@ def start_process(message):
     elif message.text == "Ubah Password":
         step_type = "input_sn_pw"
         key = "UP"
-    else:
+    elif message.text == "Ubah Nama WiFi dan Password":
         step_type = "input_sn_ssid_pw"
         key = "USP"
+    else:
+      step_type = "input_sn"
+      key = "CS"
     
     acs_state[chat_id] = {"step": step_type, "key": key}
     # print(acs_state)
     bot.reply_to(message, "Silahkan Masukan Serial Number:")
 
-@bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["input_sn_ssid", "input_sn_pw", "input_sn_ssid_pw"])
+@bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["input_sn_ssid", "input_sn_pw", "input_sn_ssid_pw", "input_sn"])
 def serial_number(message):
     step = acs_state[message.chat.id]["step"]
+    key = acs_state[message.chat.id]["key"]
+    
+    if key == "CS":
+      result = cek_perangkat(message.text)
+      
+      bot.reply_to(message, result, parse_mode="Markdown")
+      acs_state.pop(message.chat.id, None)
+      return
+    
     
     next_step = "input_ssid" if step != "input_sn_pw" else "input_pw"
     prompt = "Silahkan Masukan Nama Wifi, min 1 karakter:" if step != "input_sn_pw" else "Silahkan Masukan Password WiFi, min 8 karakter:"
