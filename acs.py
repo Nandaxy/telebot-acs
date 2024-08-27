@@ -21,20 +21,12 @@ def cek_perangkat(sn):
     
     if data:
       print("code:",res.status_code)
-      
-      
-
-   
       status = "🟢 Online"
-
-      
       hasil = f'*---Status Perangkat---*\nStatus : {status}\nMerek : {data[0]["_deviceId"]["_Manufacturer"]}\nSN : `{data[0]["_deviceId"]["_SerialNumber"]}`\nSinyal : {data[0]["VirtualParameters"]["Signal"]["_value"]}\nWaktu Aktif : {data[0]["VirtualParameters"]["upt"]["_value"]}'
     else:
-      print("Not Found")
       hasil = f'Perangkat Tidak Ditemukan'
-  
-    
     return hasil
+
   except Exception as e:
     print("errrrrr", e)
     return "Ada yang salah, Coba lagi"
@@ -44,7 +36,7 @@ def cek_sn():
 
 def acs(data):
     try:
-        print(data)
+        # print(data)
         key = data["key"]
         sn = quote(data["sn"])
         # print(key)
@@ -81,4 +73,4 @@ def acs(data):
             
     except Exception as e:
         print(f"Error : {e}")
-        return "error"
+        return "Error"

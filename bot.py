@@ -45,37 +45,30 @@ def start_process(message):
         del acs_state[chat_id]
         
     if message.text == "Ubah Nama Wifi":
-        step_type = "input_sn_ssid"
         key = "US"
     elif message.text == "Ubah Password":
-        step_type = "input_sn_pw"
         key = "UP"
     elif message.text == "Ubah Nama WiFi dan Password":
-        step_type = "input_sn_ssid_pw"
         key = "USP"
     else:
-      step_type = "input_sn"
-      key = "CS"
+        key = "CS"
     
-    acs_state[chat_id] = {"step": step_type, "key": key}
+    acs_state[chat_id] = {"step": "input_sn", "key": key}
     # print(acs_state)
     bot.reply_to(message, "Silahkan Masukan Serial Number:")
 
-@bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["input_sn_ssid", "input_sn_pw", "input_sn_ssid_pw", "input_sn"])
+@bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["input_sn"])
 def serial_number(message):
-    step = acs_state[message.chat.id]["step"]
     key = acs_state[message.chat.id]["key"]
     
     if key == "CS":
-      result = cek_perangkat(message.text)
-      
+      result = cek_perangkat(message.text.strip())
       bot.reply_to(message, result, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
     
-    
-    next_step = "input_ssid" if step != "input_sn_pw" else "input_pw"
-    prompt = "Silahkan Masukan Nama Wifi, min 1 karakter:" if step != "input_sn_pw" else "Silahkan Masukan Password WiFi, min 8 karakter:"
+    next_step = "input_ssid" if key != "UP" else "input_pw"
+    prompt = "Silahkan Masukan Nama Wifi, min 1 karakter:" if key != "UP" else "Silahkan Masukan Password WiFi, min 8 karakter:"
     
     fun_step(message, "sn", next_step, prompt)
 
@@ -93,23 +86,21 @@ def final_input(message):
     
     if len(input_value) >= (1 if step == "input_ssid" else 8):
         acs_state[message.chat.id][input_key.lower()] = input_value
+        
         if key == "USP" and step == "input_pw":
             ssid = acs_state[message.chat.id]["ssid"]
-          
-            
             data = acs_state[message.chat.id]
             result = acs(data)
             
             if result == 200:
                 bot.reply_to(message, f"SSID dan Password berhasil diubah. SSID: *{ssid}*, Password: *{input_value}*.", parse_mode="Markdown")
             elif result == 404:
-                bot.reply_to(message, "❌ Perankat tidak ditemukan, Patikan Serial Number anda benar!")
+                bot.reply_to(message, "❌ Gagal Mengubah. *Patikan Serial Number anda benar!*", parse_mode="Markdown")
             else:
                 bot.reply_to(message, f"❌ Gagal mengubah  SSID dan Password, Coba lain kali")
             acs_state.pop(message.chat.id, None) 
-        elif key != "USP":
-          
             
+        elif key != "USP":
             data = acs_state[message.chat.id]
             result = acs(data)
             print("code", result)
@@ -117,17 +108,15 @@ def final_input(message):
             if result == 200:
                bot.reply_to(message, f"*{input_key}* berhasil diubah menjadi: *{input_value}*.", parse_mode="Markdown")
             elif result == 404:
-                bot.reply_to(message, "❌ Perangkat tidak ditemukan, Patikan Serial Number anda benar!")
+                bot.reply_to(message, "❌ Gagal Mengubah. *Patikan Serial Number anda benar!*", parse_mode="Markdown")
             else:
                 bot.reply_to(message, f"❌ Gagal mengubah {input_key}, Coba lain kali")
             acs_state.pop(message.chat.id, None)
-            
     else:
         if input_key == "Password":
             bot.reply_to(message, f"Silahkan Masukan Password WiFi, min 8 karakter:")
         else:
-            bot.reply_to(message, f"{input_key} tidak valid.")
-            
+            bot.reply_to(message, f"{input_key} tidak valid.")      
 
 # /list - List devices
 @bot.message_handler(commands=['list'])
@@ -151,7 +140,6 @@ def help(message):
 @bot.message_handler(commands=['info'])
 def infokan(message):
     bot.reply_to(message, f'Info Akun Anda:\nUsername: `{message.from_user.username}`\nChatID: `{message.chat.id}`', parse_mode='Markdown')
-    
     
 # WiFi setting berformat US,UP,USP
 @bot.message_handler(func=lambda message: True, content_types=['text'])
