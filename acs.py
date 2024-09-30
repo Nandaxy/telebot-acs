@@ -24,7 +24,7 @@ def cek_perangkat(sn):
       status = "🟢 Online"
       julahClient = 0
 
-      terakhirAktif = data[0]["_lastInform"]  # isi data : 2024-09-30T10:08:02.319Z
+      terakhirAktif = data[0]["_lastInform"] 
       terakhirAktif_dt = datetime.fromisoformat(terakhirAktif[:-1])
       sekarang = datetime.utcnow()  
 
