@@ -67,8 +67,9 @@ def serial_number(message):
       acs_state.pop(message.chat.id, None)
       return
     elif key == "CC":
+      pesan_loading = bot.reply_to(message, "Sedang memproses...")
       result = cek_client(message.text.strip())
-      bot.reply_to(message, result, parse_mode="Markdown")
+      bot.edit_message_text(result, message.chat.id, pesan_loading.message_id, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
     next_step = "input_ssid" if step != "input_sn_pw" else "input_pw"

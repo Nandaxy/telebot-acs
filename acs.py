@@ -57,9 +57,11 @@ def cek_perangkat(sn):
     except Exception as e:
         print("errrrrr", e)
         return "Ada yang salah, Coba lagi"
+    
 def cek_client(sn):
   try:
-    refresh_parameter(sn)
+    refresh_parameter(sn, "Device")
+    refresh_parameter(sn, "InternetGatewayDevice.LANDevice")
     id = quote(sn)
     url = f'{API_URL}/devices/?query=%7B%22_id%22%3A%22{id}%22%7D'
 
@@ -69,7 +71,7 @@ def cek_client(sn):
       return "Perangkat tidak Ditemukan"
     if data[0]["_deviceId"]["_Manufacturer"] == "MikroTik":
       clients = data[0]["Device"]["Hosts"]["Host"]
-      hasil = "---Perangkat yang terhubung---\n\n"
+      hasil = "*---Perangkat yang terhubung---*\n\n"
       for index, client in enumerate(clients.items(), 1):
         key, client_info = client
         if key.isdigit():
@@ -129,7 +131,7 @@ def acs(data):
                 "name": "setParameterValues",
                 "parameterValues": [
                     [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.SSID", data["ssid"], "xsd:string"],
-                    [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.PreSharedKey.1.PreSharedKey", data["password"], "xsd:string"]
+                    [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.PreSharedKey.1.PreSharedKey", data["password"], "xsd:string"],
                     [f"Device.WiFi.SSID.1.SSID", data["ssid"], "xsd:string"],
                     [f"Device.WiFi.AccessPoint.1.Security.KeyPassphrase", data["password"], "xsd:string"]
                 ]
