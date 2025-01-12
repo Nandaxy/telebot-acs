@@ -163,4 +163,4 @@ def handle_wifi_message(message):
 
 # Start bot
 print("Bot Jalan...")
-bot.polling()
+bot.infinity_polling()
