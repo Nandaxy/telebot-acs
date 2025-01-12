@@ -1,7 +1,3 @@
-# Parameter SSID Mikrotik = Device.WiFi.SSID.1.SSID
-# Parameter Password Mikrotik = Device.WiFi.AccessPoint.1.Security.KeyPassphrase
-# Onu SSID = InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.SSID
-# onu Pw =  InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.PreSharedKey.1.PreSharedKey
 import requests
 from config import API_URL, SSIDKE
 from urllib.parse import quote
@@ -35,13 +31,13 @@ def cek_perangkat(sn):
             terakhirAktif_dt = datetime.fromisoformat(terakhirAktif[:-1]) 
             sekarang = datetime.utcnow()
             selisih_waktu = sekarang - terakhirAktif_dt
+            if selisih_waktu > timedelta(minutes=5):
+                status = "🔴 Offline"
 
             wib = timezone('Asia/Jakarta')
             terakhirAktif_wib = terakhirAktif_dt.astimezone(wib)
-            terakhirAktif_wib_str = terakhirAktif_wib.strftime("%H:%M:%S %d-%m-%Y")
-
-            if selisih_waktu > timedelta(minutes=5):
-                status = "🔴 Offline"
+            terakhirAktif_wib_str = terakhirAktif_wib.strftime("%H:%M:%S %d-%m-%Y")                            
+            totalClient = cek_client(sn, True, data)
 
             hasil = (
                 f'*---Status Perangkat---*\n\n'
@@ -49,29 +45,36 @@ def cek_perangkat(sn):
                 f'ID Perangkat: `{data[0]["_id"]}`\n'
                 f'Merek : {data[0]["_deviceId"]["_Manufacturer"]}\n'
                 f'Tipe: {data[0]["_deviceId"]["_ProductClass"]}\n'
+                f"Total Client: {totalClient} Perangkat\n"
                 f'Info Terakhir : {terakhirAktif_wib_str}\n'
             )
             return hasil
         else:
-            return "Perangkat tidak ditemukan"
+            return "❌ *Perangkat tidak Ditemukan*\n_Pastikan Serial Number benar!_"
     except Exception as e:
         print("errrrrr", e)
         return "Ada yang salah, Coba lagi"
     
-def cek_client(sn):
+def cek_client(sn, callback=False, data=None):
   try:
-    refresh_parameter(sn, "Device")
-    refresh_parameter(sn, "InternetGatewayDevice.LANDevice")
-    id = quote(sn)
-    url = f'{API_URL}/devices/?query=%7B%22_id%22%3A%22{id}%22%7D'
-
-    res = requests.get(url)
-    data = res.json()
-    if not data or len(data) == 0:
-      return "Perangkat tidak Ditemukan"
+    if not data:
+        refresh_parameter(sn, "Device")
+        refresh_parameter(sn, "InternetGatewayDevice.LANDevice")
+        id = quote(sn)
+        url = f'{API_URL}/devices/?query=%7B%22_id%22%3A%22{id}%22%7D'
+        res = requests.get(url)
+        data = res.json()   
+    if len(data) == 0:
+      if callback:
+        return 0
+      return "❌ *Perangkat tidak Ditemukan*\n_Pastikan Serial Number benar!_"
+  
     if data[0]["_deviceId"]["_Manufacturer"] == "MikroTik":
       clients = data[0]["Device"]["Hosts"]["Host"]
-      hasil = "*---Perangkat yang terhubung---*\n\n"
+      total = len(clients)
+      if callback: 
+        return total - 3
+      hasil = "*---Perangkat yang terhubung---*\n\n*Total*: " + str(total - 3) + " perangkat\n\n"
       for index, client in enumerate(clients.items(), 1):
         key, client_info = client
         if key.isdigit():
@@ -81,7 +84,10 @@ def cek_client(sn):
     # SELAIN MIKOTIK
     else:
       clients = data[0]["InternetGatewayDevice"]["LANDevice"]["1"]["Hosts"]["Host"]
-      hasil = "---Perangkat yang terhubung---\n\n"
+      total = len(clients)
+      if callback:
+        return total - 3
+      hasil = "*---Perangkat yang terhubung---*\n\n*Total*: " + str(total - 3) + " perangkat\n\n"
       for index, client in enumerate(clients.items(), 1):
         key, client_info = client
         if key.isdigit():
@@ -100,7 +106,7 @@ def reboot_perangkat(sn):
       res = postKeApi(sn, payload)
       return res 
    except:  
-      return "Error ada yang salah" 
+      return "Error ada yang salah, Coba lagi" 
 
 def acs(data):
     try:

@@ -62,8 +62,10 @@ def serial_number(message):
     step = acs_state[message.chat.id]["step"]
     key = acs_state[message.chat.id]["key"]
     if key == "CS":
+      pesan_loading = bot.reply_to(message, "Sedang memproses...")
       result = cek_perangkat(message.text.strip())
-      bot.reply_to(message, result, parse_mode="Markdown",)
+    # bot.reply_to(message, result, parse_mode="Markdown",)
+      bot.edit_message_text(result, message.chat.id, pesan_loading.message_id, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
     elif key == "CC":
