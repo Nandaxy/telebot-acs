@@ -20,7 +20,7 @@ Telebot ACS adalah bot telegram yang digunakan untuk mengubah nama wifi atau pas
 1. Clone repository ini
 
 ```bash
-git clone URL_ADDRESS
+git clone https://github.com/Nandaxy/telebot-acs
 ```
 
 2. Masuk ke Direktori yang telah di clone
