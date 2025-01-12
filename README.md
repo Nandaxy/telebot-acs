@@ -11,7 +11,7 @@ Telebot ACS adalah bot telegram yang digunakan untuk mengubah nama wifi atau pas
 
 # Hal yang dibutuhkan
 
-- Python 3.6+
+- Python 3.x
 - Server GenieAcs
 - Telegram Bot Token
 
