@@ -1,4 +1,3 @@
-# usp.py
 import requests
 import re
 from urllib.parse import quote

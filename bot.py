@@ -8,10 +8,7 @@ from usp import list_device, handle_wifi
 from acs import acs, cek_perangkat, cek_client, reboot_perangkat
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
-
 acs_state = {}
-
-# Event to stop the monitoring thread
 monitoring_stop_event = threading.Event()
 
 # /start 
@@ -24,15 +21,13 @@ def send_welcome(message):
     markup.add("Cek Client", "Reboot Perangkat")
     bot.reply_to(message, "Selamat datang di Bot ACS. Silakan pilih menu:", reply_markup=markup)
 
-# fuction lankah selanjutnya
+# fuction untuk lankah selanjutnya
 def fun_step(message, step_key, next_step, prompt):
     chat_id = message.chat.id
     input_value = message.text.strip()
-    
     if len(input_value) >= 1:
         acs_state[chat_id][step_key] = input_value
         acs_state[chat_id]["step"] = next_step
-        # print(acs_state)
         bot.reply_to(message, prompt)
     else:
         bot.reply_to(message, "Input tidak valid.")
@@ -41,10 +36,8 @@ def fun_step(message, step_key, next_step, prompt):
 @bot.message_handler(func=lambda message: message.text in ["Ubah Nama Wifi", "Ubah Password", "Ubah Nama WiFi dan Password", "Cek Status Perangkat", "Cek Client"])
 def start_process(message):
     chat_id = message.chat.id
-
     if chat_id in acs_state:
         del acs_state[chat_id]
-        
     if message.text == "Ubah Nama Wifi":
         step_type = "input_sn_ssid"
         key = "US"
@@ -60,7 +53,6 @@ def start_process(message):
     else:
       step_type = "input_sn"
       key = "CS"
-    
     acs_state[chat_id] = {"step": step_type, "key": key}
     # print(acs_state)
     bot.reply_to(message, "Silahkan Masukan Serial Number:")
@@ -69,7 +61,6 @@ def start_process(message):
 def serial_number(message):
     step = acs_state[message.chat.id]["step"]
     key = acs_state[message.chat.id]["key"]
-    
     if key == "CS":
       result = cek_perangkat(message.text.strip())
       bot.reply_to(message, result, parse_mode="Markdown",)
@@ -77,35 +68,26 @@ def serial_number(message):
       return
     elif key == "CC":
       result = cek_client(message.text.strip())
-      print(result)
       bot.reply_to(message, result, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
-    
-    
     next_step = "input_ssid" if step != "input_sn_pw" else "input_pw"
     prompt = "Silahkan Masukan Nama Wifi, min 1 karakter:" if step != "input_sn_pw" else "Silahkan Masukan Password WiFi, min 8 karakter:"
-    
     fun_step(message, "sn", next_step, prompt)
 
 @bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["input_ssid", "input_pw"])
 def final_input(message):
     step = acs_state[message.chat.id]["step"]
     key = acs_state[message.chat.id]["key"]
-    
     if key == "USP" and step == "input_ssid":
         return fun_step(message, "ssid", "input_pw", "Silahkan Masukan Password WiFi, min 8 karakter:")
-    
     input_key = "SSID" if step == "input_ssid" else "Password"
     input_value = message.text.strip()
-    
-    
     if len(input_value) >= (1 if step == "input_ssid" else 8):
         acs_state[message.chat.id][input_key.lower()] = input_value
         if key == "USP" and step == "input_pw":
-            ssid = acs_state[message.chat.id]["ssid"]
-          
             
+            ssid = acs_state[message.chat.id]["ssid"]
             data = acs_state[message.chat.id]
             result = acs(data)
             
@@ -117,11 +99,10 @@ def final_input(message):
                 bot.reply_to(message, f"❌ Gagal mengubah  SSID dan Password, Coba lain kali")
             acs_state.pop(message.chat.id, None) 
         elif key != "USP":
-          
             
             data = acs_state[message.chat.id]
             result = acs(data)
-            print("code", result)
+            # print("code", result)
             
             if result == 200:
                bot.reply_to(message, f"*{input_key}* berhasil diubah menjadi: *{input_value}*.", parse_mode="Markdown")
@@ -130,22 +111,18 @@ def final_input(message):
             else:
                 bot.reply_to(message, f"❌ Gagal mengubah {input_key}, Coba lain kali")
             acs_state.pop(message.chat.id, None)
-            
     else:
         if input_key == "Password":
             bot.reply_to(message, f"Silahkan Masukan Password WiFi, min 8 karakter:")
         else:
             bot.reply_to(message, f"{input_key} tidak valid.")
             
-
 # function reboot perangkat 
 @bot.message_handler(func=lambda message: message.text == "Reboot Perangkat") 
 def start_reboot(message): 
     chat_id = message.chat.id 
- 
     if chat_id in acs_state: 
         del acs_state[chat_id] 
-     
     acs_state[chat_id] = {"step": "reboot"} 
     bot.reply_to(message, "Silahkan Masukan Serial Number:") 
  
@@ -159,12 +136,7 @@ def execute_reboot(message):
     else: 
         bot.reply_to(message, "Gagal Mereboot Perangakat") 
  
-
-
-
-
 # ------------------------ Kode lama --------------------
-
 # /help
 @bot.message_handler(commands=['help'])
 def help(message):
@@ -182,7 +154,6 @@ def help(message):
 @bot.message_handler(commands=['info'])
 def infokan(message):
     bot.reply_to(message, f'Info Akun Anda:\nUsername: `{message.from_user.username}`\nChatID: `{message.chat.id}`', parse_mode='Markdown')
-    
     
 # WiFi setting berformat US,UP,USP
 @bot.message_handler(func=lambda message: True, content_types=['text'])
