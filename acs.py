@@ -127,7 +127,8 @@ def acs(data):
                 "name": "setParameterValues",
                 "parameterValues": [
                     [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.PreSharedKey.1.PreSharedKey", data["password"], "xsd:string"],
-                    [f"Device.WiFi.AccessPoint.1.Security.KeyPassphrase", data["password"], "xsd:string"]
+                    [f"Device.WiFi.AccessPoint.1.Security.KeyPassphrase", data["password"], "xsd:string"],
+                    [f"Device.WiFi.AccessPoint.1.Security.ModeEnabled", "WPA-WPA2-Personal", "xsd:string"]
                 ]
             }
             res = postKeApi(sn, payload)
@@ -139,7 +140,8 @@ def acs(data):
                     [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.SSID", data["ssid"], "xsd:string"],
                     [f"InternetGatewayDevice.LANDevice.1.WLANConfiguration.{SSIDKE}.PreSharedKey.1.PreSharedKey", data["password"], "xsd:string"],
                     [f"Device.WiFi.SSID.1.SSID", data["ssid"], "xsd:string"],
-                    [f"Device.WiFi.AccessPoint.1.Security.KeyPassphrase", data["password"], "xsd:string"]
+                    [f"Device.WiFi.AccessPoint.1.Security.KeyPassphrase", data["password"], "xsd:string"],
+                    [f"Device.WiFi.AccessPoint.1.Security.ModeEnabled", "WPA-WPA2-Personal", "xsd:string"]
                 ]
             }
             res = postKeApi(sn, payload)
