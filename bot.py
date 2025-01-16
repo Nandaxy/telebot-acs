@@ -18,7 +18,7 @@ def send_welcome(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add("Ubah Nama Wifi", "Ubah Password")
     markup.add("Ubah Nama WiFi dan Password", "Cek Status Perangkat")
-    markup.add("Cek Client", "Reboot Perangkat")
+    markup.add("Cek Client", "Restart Perangkat")
     bot.reply_to(message, "Selamat datang di Bot ACS. Silakan pilih menu:", reply_markup=markup)
 
 # fuction untuk lankah selanjutnya
@@ -33,7 +33,7 @@ def fun_step(message, step_key, next_step, prompt):
         bot.reply_to(message, "Input tidak valid.")
 
 # mulai
-@bot.message_handler(func=lambda message: message.text in ["Ubah Nama Wifi", "Ubah Password", "Ubah Nama WiFi dan Password", "Cek Status Perangkat", "Cek Client"])
+@bot.message_handler(func=lambda message: message.text in ["Ubah Nama Wifi", "Ubah Password", "Ubah Nama WiFi dan Password", "Cek Status Perangkat", "Cek Client", "Restart Perangkat"])
 def start_process(message):
     chat_id = message.chat.id
     if chat_id in acs_state:
@@ -50,9 +50,12 @@ def start_process(message):
     elif message.text == "Cek Client":
         step_type = "input_sn"
         key = "CC"
+    elif message.text == "Restart Perangkat":
+        step_type = "input_sn"
+        key = "RB"
     else:
-      step_type = "input_sn"
-      key = "CS"
+       step_type = "input_sn"
+       key = "CS"
     acs_state[chat_id] = {"step": step_type, "key": key}
     # print(acs_state)
     bot.reply_to(message, "Silahkan Masukan Serial Number:")
@@ -64,13 +67,18 @@ def serial_number(message):
     if key == "CS":
       pesan_loading = bot.reply_to(message, "Sedang memproses...")
       result = cek_perangkat(message.text.strip())
-    # bot.reply_to(message, result, parse_mode="Markdown",)
       bot.edit_message_text(result, message.chat.id, pesan_loading.message_id, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
     elif key == "CC":
       pesan_loading = bot.reply_to(message, "Sedang memproses...")
       result = cek_client(message.text.strip())
+      bot.edit_message_text(result, message.chat.id, pesan_loading.message_id, parse_mode="Markdown")
+      acs_state.pop(message.chat.id, None)
+      return
+    elif key == "RB":
+      pesan_loading = bot.reply_to(message, "Sedang memproses...")
+      result = reboot_perangkat(message.text.strip())
       bot.edit_message_text(result, message.chat.id, pesan_loading.message_id, parse_mode="Markdown")
       acs_state.pop(message.chat.id, None)
       return
@@ -120,25 +128,6 @@ def final_input(message):
         else:
             bot.reply_to(message, f"{input_key} tidak valid.")
             
-# function reboot perangkat 
-@bot.message_handler(func=lambda message: message.text == "Reboot Perangkat") 
-def start_reboot(message): 
-    chat_id = message.chat.id 
-    if chat_id in acs_state: 
-        del acs_state[chat_id] 
-    acs_state[chat_id] = {"step": "reboot"} 
-    bot.reply_to(message, "Silahkan Masukan Serial Number:") 
- 
-# eksekusi rebbot 
-@bot.message_handler(func=lambda message: acs_state.get(message.chat.id, {}).get("step") in ["reboot"]) 
-def execute_reboot(message): 
-    sn = message.text.strip() 
-    res = reboot_perangkat(sn) 
-    if res == 200: 
-        bot.reply_to(message, "Perangkat Berhasil di Reboot") 
-    else: 
-        bot.reply_to(message, "Gagal Mereboot Perangakat") 
- 
 # ------------------------ Kode lama --------------------
 # /help
 @bot.message_handler(commands=['help'])

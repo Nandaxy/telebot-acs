@@ -14,6 +14,8 @@ def refresh_parameter(sn, nama_parameter=None):
     id = quote(sn)
     payload = {"name": "refreshObject", "objectName": nama_parameter }
     #payload = {"name": "refreshObject", "objectName": ["Device", "Device.DeviceInfo"] }
+    # test = postKeApi(id, payload)
+    # print("refresh", test)
     postKeApi(id, payload)
   except:
     print("error pada function refresh")
@@ -22,39 +24,40 @@ def cek_perangkat(sn):
     try:
         id = quote(sn)
         refresh_parameter(sn, "Device")
-        #refresh_parameter(sn, "_lastInform")
         res = requests.get(f'{API_URL}/devices/?query=%7B%22_id%22%3A%22{id}%22%7D')
         data = res.json()
         if data:
             status = "🟢 Online"
-            terakhirAktif = data[0]["_lastInform"] 
-            terakhirAktif_dt = datetime.fromisoformat(terakhirAktif[:-1]) 
-            sekarang = datetime.utcnow()
+            terakhirAktif = data[0]["_lastInform"]
+            terakhirAktif_dt = datetime.strptime(terakhirAktif, "%Y-%m-%dT%H:%M:%S.%fZ")
+            terakhirAktif_dt = terakhirAktif_dt.replace(tzinfo=timezone('UTC'))
+            
+            sekarang = datetime.now(timezone('UTC'))
             selisih_waktu = sekarang - terakhirAktif_dt
-            if selisih_waktu > timedelta(minutes=5):
+            if selisih_waktu > timedelta(minutes=1):
                 status = "🔴 Offline"
 
             wib = timezone('Asia/Jakarta')
             terakhirAktif_wib = terakhirAktif_dt.astimezone(wib)
-            terakhirAktif_wib_str = terakhirAktif_wib.strftime("%H:%M:%S %d-%m-%Y")                            
+            terakhirAktif_wib_str = terakhirAktif_wib.strftime("%H:%M:%S %d-%m-%Y")
             totalClient = cek_client(sn, True, data)
 
             hasil = (
                 f'*---Status Perangkat---*\n\n'
-                f'Status : *{status}*\n'
-                f'ID Perangkat: `{data[0]["_id"]}`\n'
-                f'Merek : {data[0]["_deviceId"]["_Manufacturer"]}\n'
-                f'Tipe: {data[0]["_deviceId"]["_ProductClass"]}\n'
-                f"Total Client: {totalClient} Perangkat\n"
-                f'Info Terakhir : {terakhirAktif_wib_str}\n'
+                f"📊 *Status*: {status}\n"
+                f"🆔 *ID Perangkat*: `{data[0]['_id']}`\n"
+                f"🏷️ *Merek*: {data[0]['_deviceId']['_Manufacturer']}\n"
+                f"📦 *Tipe*: {data[0]['_deviceId']['_ProductClass']}\n"
+                f"👥 *Total Client*: {totalClient} Perangkat\n"
+                f"⏰ *Info Terakhir*: {terakhirAktif_wib_str}\n\n"
             )
             return hasil
         else:
             return "❌ *Perangkat tidak Ditemukan*\n_Pastikan Serial Number benar!_"
     except Exception as e:
         print("errrrrr", e)
-        return "Ada yang salah, Coba lagi"
-    
+        return "⚠️ Ada yang salah, Coba lagi"
+       
 def cek_client(sn, callback=False, data=None):
   try:
     if not data:
@@ -104,9 +107,15 @@ def reboot_perangkat(sn):
    try: 
       payload = {"name": "reboot"} 
       res = postKeApi(sn, payload)
-      return res 
+      if res == 200: 
+         hasil = "✅ Perangkat berhasil direstart."
+      elif res == 404:
+         hasil = "❌ Perangkat tidak ditemukan, Pastikan Serial Number benar!"
+      else:
+         hasil = "❌ Gagal merestart perangkat, coba lagi."
+      return hasil
    except:  
-      return "Error ada yang salah, Coba lagi" 
+      return "⚠️ Ada yang salah, Coba lagi"
 
 def acs(data):
     try:
