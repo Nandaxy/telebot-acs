@@ -134,11 +134,12 @@ def final_input(message):
 def help(message):
     help_text = (
         "Beberapa Perintah yang dapat digunakan:\n"
-        "/start - Start\n"
-        "/list - Menampilkan daftar perangkat yang terhubung\n"
-        "US.(Serial Number).(wifi) - Mengubah SSID WiFi\n"
-        "UP.(Serial Number).(password) - Mengubah password WiFi\n"
-        "USP.(Serial Number).(wifi).(password) - Mengubah SSID dan password WiFi"
+        "/start - Start Untuk Menampilkan Menu\n"
+        "/help - Menampilkan daftar perintah\n"
+        "/info - Menampilkan info akun\n"
+        "US.(Serial Number).(nama wifi baru) - Mengubah SSID WiFi\n"
+        "UP.(Serial Number).(password baru) - Mengubah password WiFi\n"
+        "USP.(Serial Number).(nama wifi baru).(password baru) - Mengubah SSID dan password WiFi"
     )
     bot.reply_to(message, help_text, parse_mode="Markdown")
 

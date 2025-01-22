@@ -10,16 +10,16 @@ def postKeApi(device_id, payload):
     response = requests.post(url, json=payload)
     return response.status_code
 
-def list_device(bot: TeleBot, message):
-    response = requests.get(f'{API_URL}/devices')
-    if response.status_code == 200:
-        devices = [
-            f"{index+1}. {device.get('_deviceId', {}).get('_Manufacturer', 'Unknown Manufacturer').split()[0]} {device.get('_deviceId', {}).get('_ProductClass', 'Unknown')}"
-            for index, device in enumerate(response.json())
-        ]
-        bot.reply_to(message, f'Perangkat Yang Terhubung:\n\n' + '\n'.join(devices))
-    else:
-        bot.reply_to(message, f'Gagal mengambil data dari API. Status: {response.status_code}')
+# def list_device(bot: TeleBot, message):
+#     response = requests.get(f'{API_URL}/devices')
+#     if response.status_code == 200:
+#         devices = [
+#             f"{index+1}. {device.get('_deviceId', {}).get('_Manufacturer', 'Unknown Manufacturer').split()[0]} {device.get('_deviceId', {}).get('_ProductClass', 'Unknown')}"
+#             for index, device in enumerate(response.json())
+#         ]
+#         bot.reply_to(message, f'Perangkat Yang Terhubung:\n\n' + '\n'.join(devices))
+#     else:
+#         bot.reply_to(message, f'Gagal mengambil data dari API. Status: {response.status_code}')
 
 def handle_wifi(bot: TeleBot, message):
     text = message.text.strip()
