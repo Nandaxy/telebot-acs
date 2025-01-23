@@ -1,4 +1,8 @@
-# Telebot-ACS
+<h1 align="center">Telebot ACS</h1>
+
+</p>
+<p align="center">
+<a href="https://github.com/Nandaxy"><img title="Author" src="https://img.shields.io/badge/AUTHOR-Nandaxy-green.svg?style=for-the-badge&logo=github"></a>
 
 Telebot ACS adalah bot telegram yang digunakan untuk mengubah nama wifi atau password wifi. Bot ini mengguakan API dari GenieAcs.
 
@@ -46,3 +50,9 @@ nano config.py
 ```bash 
 python bot.py
 ```
+
+# Demo
+
+<video width="640" height="360" controls muted>
+  <source src="https://www.zenn.my.id/file/video/lv_0_20250123094156.mp4" type="video/mp4">
+</video>
