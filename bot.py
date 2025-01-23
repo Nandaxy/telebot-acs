@@ -4,7 +4,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import threading
 from config import TELEGRAM_TOKEN
 from logger import logger
-from usp import list_device, handle_wifi
+from usp import handle_wifi
 from acs import acs, cek_perangkat, cek_client, reboot_perangkat
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
