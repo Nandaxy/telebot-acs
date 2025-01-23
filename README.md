@@ -53,6 +53,4 @@ python bot.py
 
 # Demo
 
-<video width="640" height="360" controls muted>
-  <source src="https://www.zenn.my.id/file/video/lv_0_20250123094156.mp4" type="video/mp4">
-</video>
+[Demo Video](https://www.zenn.my.id/file/video/lv_0_20250123094156.mp4)
